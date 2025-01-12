@@ -1,3 +1,4 @@
+-- SELECT
 -- Find the IDs of products that are both low fat and recyclable.
 SELECT product_id 
 FROM products 
@@ -113,6 +114,7 @@ GROUP BY
     s.user_id;
 
 -- Basic aggregate functions
+
 -- Write a solution to report the movies with an odd-numbered ID and a description that is not "boring".
 SELECT 
     *
@@ -228,4 +230,8 @@ JOIN
 ON 
     a.player_id = t.player_id;
 
+-- SORTING &  GROUPING 
+-- Write a solution to calculate the number of unique subjects each teacher teaches in the university.
+select teacher_id, count(distinct(subject_id)) as cnt from teacher group by teacher_id;
 
+-- 
