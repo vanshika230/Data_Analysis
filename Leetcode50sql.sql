@@ -232,6 +232,203 @@ ON
 
 -- SORTING &  GROUPING 
 -- Write a solution to calculate the number of unique subjects each teacher teaches in the university.
-select teacher_id, count(distinct(subject_id)) as cnt from teacher group by teacher_id;
+SELECT 
+    teacher_id, 
+    COUNT(DISTINCT subject_id) AS cnt 
+FROM 
+    teacher 
+GROUP BY 
+    teacher_id;
 
--- 
+-- Write a solution to find the daily active user count for a period of 30 days ending 2019-07-27 inclusively. 
+-- A user was active on a specific day if they made at least one activity on that day.
+SELECT 
+    activity_date AS day, 
+    COUNT(DISTINCT user_id) AS active_users
+FROM 
+    Activity
+WHERE 
+    activity_date > "2019-06-27" AND activity_date <= "2019-07-27"
+GROUP BY 
+    activity_date;
+
+-- Write a solution to select the product ID, year, quantity, and price for the first year of every product sold.
+SELECT 
+    product_id, 
+    year AS first_year, 
+    quantity, 
+    price
+FROM 
+    Sales
+WHERE 
+    (product_id, year) IN (
+        SELECT 
+            product_id, 
+            MIN(year)
+        FROM 
+            Sales
+        GROUP BY 
+            product_id
+    );
+
+-- Write a solution to find all the classes that have at least five students.
+SELECT 
+    class 
+FROM 
+    courses 
+GROUP BY 
+    class 
+HAVING 
+    COUNT(student) >= 5;
+
+-- Write a solution that will, for each user, return the number of followers.
+SELECT 
+    user_id, 
+    COUNT(follower_id) AS followers_count 
+FROM 
+    followers 
+GROUP BY 
+    user_id 
+ORDER BY 
+    user_id;
+
+-- A single number is a number that appeared only once in the MyNumbers table. Find the largest single number. If there is no single number, report NULL.
+SELECT 
+    MAX(num) AS num 
+FROM (
+    SELECT 
+        num 
+    FROM 
+        MyNumbers 
+    GROUP BY 
+        num 
+    HAVING 
+        COUNT(num) = 1
+) AS nums;
+
+-- Write a solution to report the customer IDs from the Customer table that bought all the products in the Product table.
+SELECT 
+    customer_id
+FROM 
+    Customer
+GROUP BY 
+    customer_id
+HAVING 
+    COUNT(DISTINCT product_key) = (
+        SELECT 
+            COUNT(DISTINCT product_key) 
+        FROM 
+            Product
+    );
+
+
+-- Advanced Join and Select
+-- Write a solution to report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.
+SELECT
+    emp1.employee_id,
+    emp1.name,
+    COUNT(emp2.employee_id) AS reports_count,
+    ROUND(AVG(emp2.age)) AS average_age
+FROM Employees emp1
+INNER JOIN Employees emp2 ON emp1.employee_id = emp2.reports_to
+GROUP BY emp1.employee_id
+ORDER BY emp1.employee_id
+
+-- Write a solution to report all the employees with their primary department. For employees who belong to one department, report their only department.
+SELECT DISTINCT employee_id, department_id
+FROM Employee
+WHERE employee_id IN (
+    SELECT employee_id
+    FROM Employee
+    GROUP BY employee_id
+    HAVING COUNT(*) = 1
+  )
+  OR primary_flag = 'Y'
+ORDER BY employee_id;
+
+-- Report for every three line segments whether they can form a triangle.
+SELECT *, IF(x+y>z and y+z>x and z+x>y, "Yes", "No") as triangle FROM Triangle
+
+-- Find all numbers that appear at least three times consecutively.
+-- Approach 1 -Using Joins
+SELECT DISTINCT l1.num AS ConsecutiveNums
+FROM Logs l1
+JOIN Logs l2 ON l1.id = l2.id - 1
+JOIN Logs l3 ON l1.id = l3.id - 2
+WHERE l1.num = l2.num AND l2.num = l3.num;
+
+-- Approach 2-Using  LEAD and LAG
+SELECT DISTINCT num AS ConsecutiveNums
+FROM (
+    SELECT 
+        LAG(id) OVER (ORDER BY id) AS prev_id,
+        id,
+        LEAD(id) OVER (ORDER BY id) AS next_id,
+        LAG(num) OVER (ORDER BY id) AS prev_num,
+        num,
+        LEAD(num) OVER (ORDER BY id) AS next_num
+    FROM logs
+) subquery
+WHERE prev_num = num 
+  AND num = next_num
+  AND next_id - id = 1 
+  AND id - prev_id = 1;
+
+-- Write a solution to find the prices of all products on 2019-08-16. Assume the price of all products before any change is 10.
+WITH
+  RankedProducts AS (
+    SELECT
+      product_id,
+      new_price,
+      RANK() OVER(
+        PARTITION BY product_id
+        ORDER BY change_date DESC
+      ) AS `rank`
+    FROM Products
+    WHERE change_date <= '2019-08-16'
+  ),
+  ProductToLatestPrice AS (
+    SELECT product_id, new_price
+    FROM RankedProducts
+    WHERE `rank` = 1
+  )
+SELECT
+  Products.product_id,
+  IFNULL(ProductToLatestPrice.new_price, 10) AS price
+FROM Products
+LEFT JOIN ProductToLatestPrice
+  USING (product_id)
+GROUP BY 1;
+
+-- Write a solution to find the person_name of the last person that can fit on the bus without exceeding the weight limit. 
+WITH CumulativeSum AS (
+    SELECT person_name, SUM(weight) OVER (ORDER BY turn) AS cumulative_sum
+    FROM Queue
+)
+SELECT person_name
+FROM CumulativeSum
+WHERE cumulative_sum <= 1000
+ORDER BY cumulative_sum DESC
+LIMIT 1;
+
+-- Write a solution to calculate the number of bank accounts for each salary category. The salary categories are:
+-- "Low Salary": All the salaries strictly less than $20000.
+-- "Average Salary": All the salaries in the inclusive range [$20000, $50000].
+-- "High Salary": All the salaries strictly greater than $50000.
+
+SELECT 'Low Salary' as category, COUNT(*) as accounts_count
+FROM Accounts
+WHERE income<20000
+
+UNION
+
+SELECT 'Average Salary', COUNT(*)
+FROM Accounts 
+WHERE income BETWEEN 20000 AND 50000
+
+UNION 
+
+SELECT 'High Salary', COUNT(*)
+FROM Accounts
+WHERE income > 50000
+
