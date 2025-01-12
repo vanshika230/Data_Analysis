@@ -432,3 +432,86 @@ SELECT 'High Salary', COUNT(*)
 FROM Accounts
 WHERE income > 50000
 
+-- Find the IDs of the employees whose salary is strictly less than $30000 and whose manager left the company.
+-- When a manager leaves the company, their information is deleted from the Employees table, but the reports still have their manager_id set to the manager that left.
+SELECT employee_id
+FROM Employees
+WHERE salary < 30000 
+AND manager_id NOT IN (SELECT DISTINCT employee_id FROM Employees) 
+ORDER BY employee_id
+
+-- Write a solution to swap the seat id of every two consecutive students. If the number of students is odd, the id of the last student is not swapped.
+SELECT 
+    id,
+    CASE
+        WHEN id % 2 = 0 THEN LAG(student) OVER(ORDER BY id)
+        ELSE COALESCE(LEAD(student) OVER(ORDER BY id), student)
+    END AS student
+FROM Seat
+
+-- Write a solution to:
+-- Find the name of the user who has rated the greatest number of movies. In case of a tie, return the lexicographically smaller user name.
+-- Find the movie name with the highest average rating in February 2020. In case of a tie, return the lexicographically smaller movie name.
+
+# Write your MySQL query statement below
+(SELECT name AS results
+FROM MovieRating JOIN Users USING(user_id)
+GROUP BY name
+ORDER BY COUNT(*) DESC, name
+LIMIT 1)
+
+UNION ALL
+
+(SELECT title AS results
+FROM MovieRating JOIN Movies USING(movie_id)
+WHERE EXTRACT(YEAR_MONTH FROM created_at) = 202002
+GROUP BY title
+ORDER BY AVG(rating) DESC, title
+LIMIT 1);
+
+-- Compute the moving average of how much the customer paid in a seven days window (i.e., current day + 6 days before). 
+SELECT visited_on, amount, ROUND(amount/7, 2) average_amount
+FROM (
+    SELECT DISTINCT visited_on, 
+    SUM(amount) OVER(ORDER BY visited_on RANGE BETWEEN INTERVAL 6 DAY   PRECEDING AND CURRENT ROW) amount, 
+    MIN(visited_on) OVER() 1st_date 
+    FROM Customer
+) t
+WHERE visited_on>= 1st_date+6;
+
+--Write a solution to find the people who have the most friends and the most friends number.
+SELECT id, COUNT(*) AS num 
+FROM (
+    SELECT requester_id AS id FROM RequestAccepted
+    UNION ALL
+    SELECT accepter_id FROM RequestAccepted
+) AS friends_count
+GROUP BY id
+ORDER BY num DESC 
+LIMIT 1;
+
+--Write a solution to report the sum of all total investment values in 2016 tiv_2016, for all policyholders who:
+-- have the same tiv_2015 value as one or more other policyholders, and
+-- are not located in the same city as any other policyholder (i.e., the (lat, lon) attribute pairs must be unique).
+select
+    round(sum(tiv_2016), 2) as tiv_2016
+from
+    (
+        select
+            *
+            , count(*) over (partition by tiv_2015) as tiv_2015_cnt
+            , count(*) over (partition by lat, lon) as location_cnt
+        from
+            insurance
+    ) t 
+where tiv_2015_cnt > 1 and location_cnt = 1
+
+--A company's executives are interested in seeing who earns the most money in each of the company's departments. 
+-- A high earner in a department is an employee who has a salary in the top three unique salaries for that department.
+SELECT Department, Employee, Salary
+FROM (
+SELECT Emp.id,Emp.name AS Employee,Emp.salary AS Salary, Dept.name AS Department,
+DENSE_RANK() over (PARTITION BY Emp.departmentId ORDER BY Emp.salary DESC) AS Salary_Rank
+FROM Employee as Emp LEFT JOIN Department Dept
+ON Emp.departmentId = Dept.id)AS TMP
+WHERE Salary_Rank <= 3
