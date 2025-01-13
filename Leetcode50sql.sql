@@ -515,3 +515,48 @@ DENSE_RANK() over (PARTITION BY Emp.departmentId ORDER BY Emp.salary DESC) AS Sa
 FROM Employee as Emp LEFT JOIN Department Dept
 ON Emp.departmentId = Dept.id)AS TMP
 WHERE Salary_Rank <= 3
+
+-- String Manipulation 
+-- Write a solution to fix the names so that only the first character is uppercase and the rest are lowercase.
+SELECT Users.user_id , CONCAT(UPPER(SUBSTR(Users.name,1,1)),LOWER(SUBSTR(Users.name,2))) AS name 
+FROM Users
+ORDER BY
+Users.user_id ASC
+
+-- Write a solution to find the patient_id, patient_name, and conditions of the patients who have Type I Diabetes. 
+-- Type I Diabetes always starts with DIAB1 prefix.
+select patient_id,patient_name,conditions from Patients
+where conditions like 'DIAB1%'  or  conditions like '% DIAB1%' ;
+
+-- Write a solution to delete all duplicate emails, keeping only one unique email with the smallest id.
+delete p1 from person p1,person p2 
+where p1.email=p2.email and p1.id>p2.id;
+
+-- nth highest salary
+WITH CTE AS
+			(SELECT Salary, RANK () OVER (ORDER BY Salary desc) AS RANK_desc
+			   FROM Employee)
+SELECT MAX(salary) AS SecondHighestSalary
+  FROM CTE
+ WHERE RANK_desc = 2
+
+-- sell_date  | num_sold | products                     |
++------------+----------+------------------------------+
+| 2020-05-30 | 3        | Basketball,Headphone,T-shirt |
+| 2020-06-01 | 2        | Bible,Pencil 
+       
+select sell_date, count( DISTINCT product ) as num_sold ,
+GROUP_CONCAT( DISTINCT product order by product ASC separator ',' ) as products
+FROM Activities GROUP BY sell_date order by sell_date ASC;
+
+-- Write a solution to get the names of products that have at least 100 units ordered in February 2020 and their amount.
+SELECT p.product_name AS product_name, sum(o.unit) AS unit FROM Products p
+JOIN Orders o USING (product_id)
+WHERE YEAR(o.order_date)='2020' AND MONTH(o.order_date)='02'
+GROUP BY p.product_id
+HAVING SUM(o.unit)>=100
+
+-- Write a solution to find the users who have valid emails.
+SELECT *
+FROM Users
+WHERE mail REGEXP '^[A-Za-z][A-Za-z0-9_\.\-]*@leetcode(\\?com)?\\.com$';
