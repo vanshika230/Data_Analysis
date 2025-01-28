@@ -132,6 +132,20 @@ SELECT ROUND(SQRT(POWER(b - d, 2) + POWER(a - c, 2)), 4) AS Distance FROM CTE;
 select co.continent, floor(avg(c.population)) from city c inner join country co on c.countrycode=co.code group by co.continent;
 
 
+MEDIUM SQL
+1. https://www.hackerrank.com/challenges/the-company/problem?isFullScreen=true
+Select c.company_code, c.founder, COUNT(DISTINCT e.lead_manager_code), COUNT(DISTINCT e.senior_manager_code), COUNT(DISTINCT e.manager_code), COUNT(DISTINCT e.employee_code) 
+FROM employee e 
+INNER JOIN company c 
+on c.company_code = e.company_code
+GROUP BY c.company_code, c.founder;
 
-
-11. 
+2. https://www.hackerrank.com/challenges/the-report/problem?isFullScreen=true
+SELECT 
+    IF(Grade < 8, NULL,Name), Grade, Marks
+FROM Students s JOIN Grades g
+ON s.marks BETWEEN g.Min_Mark AND g.Max_Mark
+ORDER BY 
+        Grade DESC,
+    CASE WHEN Grade < 8 THEN  Marks ELSE Name END
+3. 
