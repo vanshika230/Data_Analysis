@@ -98,7 +98,22 @@ SELECT
         2
     ) AS accept_rate;
 
+10. https://leetcode.com/problems/consecutive-available-seats/
+SELECT DISTINCT a.seat_id
+FROM
+    Cinema AS a
+    JOIN Cinema AS b ON ABS(a.seat_id - b.seat_id) = 1 AND a.free AND b.free
+ORDER BY 1;
 
+11. https://leetcode.com/problems/shortest-distance-in-a-plane/
+SELECT ROUND(SQRT(POW(p1.x - p2.x, 2) + POW(p1.y - p2.y, 2)), 2) AS shortest
+FROM
+    Point2D AS p1
+    JOIN Point2D AS p2 ON p1.x != p2.x OR p1.y != p2.y
+ORDER BY 1
+LIMIT 1;
+
+12. 
 
 
 
