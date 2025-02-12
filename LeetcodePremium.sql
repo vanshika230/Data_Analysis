@@ -113,7 +113,42 @@ FROM
 ORDER BY 1
 LIMIT 1;
 
-12. 
+12. https://leetcode.com/problems/shortest-distance-in-a-line/
+SELECT MIN(p2.x - p1.x) AS shortest
+FROM
+    Point AS p1
+    JOIN Point AS p2 ON p1.x < p2.x;
+
+13. https://leetcode.com/problems/second-degree-follower/description/
+SELECT follower, COUNT(*) AS num
+FROM follow 
+WHERE follower IN (SELECT followee FROM follow)
+GROUP BY follower;
+
+14. https://leetcode.com/problems/average-salary-departments-vs-company/description/
+WITH
+    t AS (
+        SELECT
+            DATE_FORMAT(pay_date, '%Y-%m') AS pay_month,
+            department_id,
+            AVG(amount) OVER (PARTITION BY pay_date) AS company_avg_amount,
+            AVG(amount) OVER (PARTITION BY pay_date, department_id) AS department_avg_amount
+        FROM
+            Salary AS s
+            JOIN Employee AS e ON s.employee_id = e.employee_id
+    )
+SELECT DISTINCT
+    pay_month,
+    department_id,
+    CASE
+        WHEN company_avg_amount = department_avg_amount THEN 'same'
+        WHEN company_avg_amount < department_avg_amount THEN 'higher'
+        ELSE 'lower'
+    END AS comparison
+FROM t;
+
+
+
 
 
 
