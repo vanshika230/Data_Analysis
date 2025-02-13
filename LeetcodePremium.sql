@@ -147,7 +147,16 @@ SELECT DISTINCT
     END AS comparison
 FROM t;
 
-
+15. https://leetcode.com/problems/students-report-by-geography/description/
+select America, Asia, Europe from (
+select name as America , row_number() over() as index1 from student where continet="America" order by America
+left join 
+select name as Asia , row_number() over() as index1 from student where continet="Asia" order by Asia
+on index1=index2 
+left join
+select name as Europe , row_number() over() as index1 from student where continet="Europe" order by Europe
+index1=index3 
+)
 
 
 
